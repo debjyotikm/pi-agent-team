@@ -1,0 +1,13 @@
+{
+  "name": "pi-agent-team",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Persistent multi-agent task coordination with Pi",
+  "scripts": {
+    "test": "python3 -m unittest discover -s tests -v",
+    "check:export": "python3 scripts/check_export.py"
+  },
+  "dependencies": {
+    "@earendil-works/pi-coding-agent": "0.85.1"
+  }
+}

@@ -1,0 +1,24 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Pi team</title>
+<style>body{font:16px system-ui;margin:32px auto;padding:0 24px;max-width:1180px;background:#111827;color:#e5e7eb}h1{font-size:26px}small{color:#9ca3af}table{border-collapse:collapse;width:100%;margin:20px 0}td,th{text-align:left;padding:10px;border-bottom:1px solid #374151}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#1f2937;padding:16px;border-radius:8px}select{font:inherit;padding:8px;background:#1f2937;color:inherit}article{margin:20px 0}a{color:#93c5fd}</style>
+<h1 id="team-title">Pi team</h1>
+<p>Tasks, assignments, results, and execution evidence. Submit work through the <code>team.py</code> command.</p>
+<p id="availability"></p>
+<select id="runs"><option>No task submitted</option></select><div id="status"></div><h2>Activity and evidence</h2><div id="events"></div>
+<script>
+const $=id=>document.getElementById(id);let selected='',after=0;
+function el(tag,text){const n=document.createElement(tag);n.textContent=text;return n}
+function table(headers,rows){const t=document.createElement('table');let r=document.createElement('tr');headers.forEach(x=>r.append(el('th',x)));t.append(r);rows.forEach(xs=>{r=document.createElement('tr');xs.forEach(x=>r.append(el('td',x??'')));t.append(r)});return t}
+$('runs').onchange=()=>{selected=$('runs').value;after=0;$('events').replaceChildren();refresh()};
+async function refresh(){try{const s=await(await fetch('/api/status')).json();$('team-title').textContent=s.team?.title??'Pi team';document.title=s.team?.title??'Pi team';const active=s.runs.find(x=>x.run.state==='running');$('availability').textContent=active?'Task progress: '+(active.progress?.state??'unknown')+' — '+(active.progress?.reason??''):'Ready for a new task. Agent inference is idle.';const ids=s.runs.map(x=>x.run.id);if(!selected&&ids.length)selected=ids[0];$('runs').replaceChildren(...ids.map(id=>{const o=el('option',id);o.value=id;o.selected=id===selected;return o}));const run=s.runs.find(x=>x.run.id===selected);$('status').replaceChildren();if(!run){if(s.team)$('status').append(table(['Agent','Model','Thinking','Role'],Object.entries(s.team.roster).map(([a,v])=>[a,v.model,v.thinking,v.role])));$('status').append(el('p','Ready for a real task. No agent inference is running.'));return}
+$('status').append(el('p','State: '+run.run.state+' · Artifact: '+run.version),el('pre',run.run.prompt));if(run.progress)$('status').append(el('p','Progress: '+run.progress.state+' · '+run.progress.reason+(run.progress.next_actor?' Next actor: '+run.progress.next_actor+'.':'')));
+$('status').append(table(['Agent','Model','Thinking','Activity'],Object.entries(run.roster).map(([a,v])=>[a,v.model,v.thinking,s.agents.find(x=>x.agent===a&&x.run===selected)?.state??(run.run.state==='complete'?'stopped':run.run.state==='paused'?'paused':'starting')])));
+$('status').append(table(['Task','Owner','Reviewer','State','Description'],run.tasks.map(t=>[t.id,t.owner,t.reviewer,t.state,t.description])));
+if(run.participant_recovery?.length)$('status').append(el('h2','Participant recovery'),el('pre',JSON.stringify(run.participant_recovery,null,2)));
+if(run.progress?.issues?.length)$('status').append(el('h2','Coordination needed'),el('pre',JSON.stringify(run.progress.issues,null,2)));
+if(run.workflow_issues?.length)$('status').append(el('h2','Dependency problems'),el('pre',JSON.stringify(run.workflow_issues,null,2)));
+const actions=run.message_actions??[];const unresolved=actions.filter(x=>x.state==='open');if(actions.length)$('status').append(el('h2','Actionable messages'),table(['Message','Recipient','Delivery','Resolution','Task'],actions.slice(-40).map(x=>[x.message_id,x.recipient,x.presented_at?'Presented to model':x.injected_at?'Queued into session':x.delivery_state,x.state,x.task_id??'Decision required'])));
+if(run.run.final)$('status').append(el('pre',JSON.stringify(JSON.parse(run.run.final),null,2)));
+const ev=await(await fetch('/api/events?run='+encodeURIComponent(selected)+'&after='+after)).json();for(const e of ev){after=e.id;const a=document.createElement('details');a.append(el('summary',new Date(e.created*1000).toLocaleTimeString()+' · '+e.agent+' · '+e.kind+' · evidence '+e.id),el('pre',JSON.stringify(e.data,null,2)));$('events').prepend(a)}while($('events').children.length>200)$('events').lastChild.remove();
+}catch(e){$('status').replaceChildren(el('p','Controller unavailable: '+e.message))}}
+refresh();setInterval(refresh,3000);
+</script></html>

@@ -1,0 +1,70 @@
+{
+  "title": "Pi Agent Team",
+  "lead": "lead",
+  "port": 18890,
+  "output_tokens": 4096,
+  "context_window": 32768,
+  "concurrency": {
+    "local": 2
+  },
+  "agents": {
+    "lead": {
+      "model": "your-model-id",
+      "provider": "local",
+      "thinking": "off",
+      "role": "lead"
+    },
+    "worker-1": {
+      "model": "your-model-id",
+      "provider": "local",
+      "thinking": "off",
+      "role": "worker"
+    },
+    "worker-2": {
+      "model": "your-model-id",
+      "provider": "local",
+      "thinking": "off",
+      "role": "worker"
+    },
+    "worker-3": {
+      "model": "your-model-id",
+      "provider": "local",
+      "thinking": "off",
+      "role": "worker"
+    },
+    "worker-4": {
+      "model": "your-model-id",
+      "provider": "local",
+      "thinking": "off",
+      "role": "worker"
+    }
+  },
+  "providers": {
+    "local": {
+      "baseUrl": "http://127.0.0.1:8000/v1",
+      "api": "openai-completions",
+      "api_key_env": "MODEL_API_KEY",
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsReasoningEffort": false,
+        "maxTokensField": "max_tokens"
+      },
+      "models": [
+        {
+          "id": "your-model-id",
+          "name": "Your model",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 32768,
+          "maxTokens": 4096
+        }
+      ]
+    }
+  },
+  "compaction": {
+    "reserveTokens": 8192,
+    "keepRecentTokens": 4096
+  }
+}

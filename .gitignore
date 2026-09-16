@@ -1,0 +1,36 @@
+# Local configuration and runtime data
+state/
+state-*/
+runs/
+verification/
+backups/
+artifacts/
+logs/
+sessions/
+team.local.json
+*.local.json
+.env
+.env.*
+!.env.example
+*.db
+*.db-*
+*.sqlite*
+*.jsonl
+*.log
+*.token
+*.key
+*.pem
+auth.json
+models_cache.json
+credentials*
+# Dependencies and generated files
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+coverage/
+.DS_Store
+*.tar.gz
+*.zip
